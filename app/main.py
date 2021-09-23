@@ -20,6 +20,7 @@ from pydantic import BaseSettings
 from PIL import Image
 import pytesseract
 
+
 class Settings(BaseSettings):
     app_auth_token: str
     debug: bool = False
@@ -49,8 +50,8 @@ app = FastAPI()
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 
-@app.get("/", response_class=HTMLResponse) # http GET -> JSON
-def home_view(request: Request, settings:Settings = Depends(get_settings)):
+@app.get("/", response_class=HTMLResponse)  # http GET -> JSON
+def home_view(request: Request, settings: Settings = Depends(get_settings)):
     print(settings.debug)
     return templates.TemplateResponse("home.html", {"request": request, "abc": 123})
 
@@ -71,21 +72,8 @@ def verify_auth(authorization=Header(None), settings: Settings = Depends(get_set
         raise HTTPException(detail="Invalid endpoint", status_code=401)
 
 
-#Este sirve para poder extraer una imagen en el form data
-# @app.post("/")
-# async def prediction_view(file:UploadFile = File(...), authorization = Header(None), settings:Settings = Depends(get_settings)):
-#     verify_auth(authorization, settings)
-#     bytes_str = io.BytesIO(await file.read())
-#     try:
-#         img = Image.open(bytes_str)
-#     except:
-#         raise HTTPException(detail="Invalid image", status_code=400)
-#     preds = pytesseract.image_to_string(img)
-#     predictions = [x for x in preds.split("\n")]
-#     return {"results": predictions, "original": preds}
-
 @app.post("/")
-def prediction_view(file:str = Body(...), authorization = Header(None), settings:Settings = Depends(get_settings)):
+def prediction_view(file: str = Body(...), authorization=Header(None), settings: Settings = Depends(get_settings)):
     verify_auth(authorization, settings)
     print(file)
     bytes_str = io.BytesIO(base64.b64decode(file))
